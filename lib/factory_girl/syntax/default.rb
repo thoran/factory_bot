@@ -18,6 +18,12 @@ module FactoryGirl
           proxy.instance_eval(&block) if block_given?
 
           FactoryGirl.register_factory(factory)
+          if FactoryGirl.configuration.warn_on_static_attributes && proxy.static_attributes.any?
+            attribute_list = proxy.static_attributes.map {|a| "* #{a}"}.join("\n")
+            ActiveSupport::Deprecation.warn(
+              "Factory '#{name}' has the following static attributes:\n#{attribute_list}"
+            )
+          end
 
           proxy.child_factories.each do |(child_name, child_options, child_block)|
             parent_factory = child_options.delete(:parent) || name
